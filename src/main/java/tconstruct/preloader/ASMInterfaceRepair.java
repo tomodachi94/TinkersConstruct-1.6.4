@@ -74,7 +74,7 @@ public class ASMInterfaceRepair implements IClassTransformer
             obj = Class.forName(inf.replace("/", "."));
             //obj = ReflectionHelper.getClass( getClass().getClassLoader(), inf.replace( "/", "." ) );
         }
-        catch (Throwable _)
+        catch (Throwable throwable)
         {
         }
 
