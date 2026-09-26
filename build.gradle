@@ -6,71 +6,47 @@
  * Help from AbrarSyed
  */
 
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            name = 'ForgeFS'
-            url = 'http://files.minecraftforge.net/maven'
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.0-SNAPSHOT'
-    }
+plugins {
+    id 'java'
+	id 'org.gradlex.reproducible-builds' version '1.1'
+    id 'net.minecraftforge.gradle' version '7.0.28'
+    id 'net.minecraftforge.renamer' version '1.1.2'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+
+tasks.withType(JavaCompile).configureEach {
+    options.fork = true
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-source', '1.6', '-target', '1.6']
 }
 
 repositories {
-    ivy {
-        name 'Forge FS legacy'
-        artifactPattern "http://files.minecraftforge.net/[module]/[module]-dev-[revision].[ext]"
-    }
-    ivy {
-        name 'CB FS'
-        artifactPattern "http://www.chickenbones.craftsaddle.org/Files/New_Versions/1.6.4/[module]-dev%20[revision].[ext]"
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    maven {
+        name 'CB'
+        url "https://maven.covers1624.net"
     }
     maven {
-        name 'ForgeFS'
-        url 'http://files.minecraftforge.net/maven'
-     }
-}
-
-// Load ForgeGradle
-apply plugin: 'forge'
-group = 'tconstruct'
-
-
-// Define properties file
-ext.configFile = file "build.properties"
-
-configFile.withReader {
-    // Load config.  It shall from now be referenced as simply config or project.config
-    def prop = new Properties()
-    prop.load(it)
-    project.ext.config = new ConfigSlurper().parse prop
-}
-
-ext.artifact_version_override = 'NotUsed'
-//gitignored config file -- if this has the entry for override it will override the version for local builds
-//create a file called version.properties with the line artifact_version_override=NotUsed
-//replace not used w/ version #'s for manual local overrides
-ext.configFile2 = file "version.properties"
-if (configFile2.exists()){
-    configFile2.withReader {
-        def prop2 = new Properties()
-        prop2.load(it)
-        ext.GIVersionFL = new ConfigSlurper().parse prop2
-        if (GIVersionFL != null){
-            project.artifact_version_override = GIVersionFL.artifact_version_override
-        }
+        name = 'Curse Maven'
+        url = 'https://www.cursemaven.com'
     }
 }
 
+group = 'tconstruct'
+
+ext.artifact_version_override = 'NotUsed'
+
 dependencies {
-    //compile "mantle:Mantle:${config.mantle_version}:dev"
-    compile name: 'ForgeMultipart', version: "${config.minecraft_version}-${config.FMP_version}", ext: 'jar'
-    compile name: 'CodeChickenLib', version: "${config.minecraft_version}-${config.CCLIB_version}", ext: 'jar'
-    compile name: 'NotEnoughItems', version: "${config.NEI_version}", type: 'jar'
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+    compileOnly renamer.dependency("curse.maven:ForgeMultipart-229323:2233279")
+    compileOnly "codechicken:NotEnoughItems:${minecraft_version}-${NEI_version}:dev"
+    compileOnly files("libs/CodeChickenLib-dev-${minecraft_version}-${CCLIB_version}.jar")
 }
+
+renamer.mappings.from minecraft.dependency.toObfFile
 
 // Finds and sets version data
 task buildInfo {
@@ -99,34 +75,41 @@ if (System.getenv().ARTIFACT_VERSION != null && artifact_version_override == 'No
 if (artifact_version_override != 'NotUsed') {
     artifact_version = "${artifact_version_override}"
 }
-version = "${config.minecraft_version}-${artifact_version}"
+version = "${minecraft_version}-${artifact_version}"
 
 minecraft {
-    version = config.minecraft_version + "-" + config.forge_version
-    assetDir = 'run/assets'
-    replace '${version}', project.version
+    mappings channel: 'snapshot', version: '20130918-1.6.3'
+    accessTransformer.from file('resources/META-INF/accesstransformer.cfg')
+    // replace '${version}', project.version
+
+    runs {
+        register('client') {
+            workingDir = file('runs/main/client/')
+            environment.put('tweakClass', 'cpw.mods.fml.common.launcher.FMLTweaker')
+            jvmArgs '-Dfml.ignoreInvalidMinecraftCertificates=true'
+        }
+        register('server') {
+            workingDir = file('runs/main/server/')
+            environment.put('tweakClass', 'cpw.mods.fml.common.launcher.FMLServerTweaker')
+            jvmArgs '-Dfml.ignoreInvalidMinecraftCertificates=true'
+        }
+    }
 }
 
 
 sourceSets {
     main {
+        java.srcDirs = ['src/main/java', 'src/api/java']
         resources {
             srcDir 'resources'
         }
     }
 }
-processResources
-{
-    // Replace stuff in text files, not binaries.
-    from(sourceSets.main.resources.srcDirs) {
-        include '**/*.info'
-        // Replace version and MCversion
-        expand 'version':artifact_version,'MCversion':config.minecraft_version
-    }
-        
-    // Copy everything else that's not text
-    from(sourceSets.main.resources.srcDirs) {
-        exclude '**/*.info'
+processResources {
+    filesMatching('**/*.info') {
+        filter { line ->
+            line.replace('@VERSION@', artifact_version).replace('@MCVERSION@', minecraft_version)
+        }
     }
 }
 
@@ -141,7 +124,7 @@ jar {
 // Create deobf dev jars
 task deobfJar(type: Jar) {
     from sourceSets.main.output
-    classifier = 'deobf'
+    archiveClassifier = 'deobf'
 }
 
 // Create API library jar
@@ -149,7 +132,7 @@ task libJar(type: Jar) {
     from(sourceSets.main.java) {
         include "tconstruct/library/*"
     }
-    classifier = 'lib'
+    archiveClassifier = 'lib'
 }
 
 artifacts {
