@@ -1,11 +1,8 @@
-#[Tinkers' Construct](http://www.minecraftforum.net/topic/1659892-tinkers-construct/)
+# [Tinkers' Construct](http://www.minecraftforum.net/topic/1659892-tinkers-construct/) for 1.6.4
 
 Modify all the things, then do it again! 	 
 Melt down any metals you find. 	 
 Turn everything into golems!
-
-###This branch is now under limited support
-all updates are at the discretion of the SlimeKnights
 
 Install Forge as usual, and setup your IDE as with any other Forge project. Copy `TCore_dummy.jar` to `forge/mcp/jars/mods/` to enable the Preloader (optional -- only needed when working on the preloader itself)
 

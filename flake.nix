@@ -30,6 +30,16 @@
 			  pkgs.jdk25
             pkgs.gradle_9
             ];
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
+              pkgs.alsa-lib
+              pkgs.libGL
+              pkgs.libx11
+              pkgs.libxcursor
+              pkgs.libxext
+              pkgs.libxi
+              pkgs.libxrandr
+              pkgs.libxxf86vm
+            ];
             JAVA_HOME = pkgs.jdk25;
             JAVA8_HOME = "${pkgs.jdk8}/lib/openjdk";
             JAVA_TOOL_OPTIONS = "-Dorg.gradle.java.installations.fromEnv=JAVA8_HOME";
