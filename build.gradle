@@ -100,11 +100,11 @@ minecraft {
 sourceSets {
     main {
         java.srcDirs = ['src/main/java', 'src/api/java']
-        resources {
-            srcDir 'resources'
-        }
+		resources.srcDirs = ['resources']
     }
 }
+sourceSets.main.output.resourcesDir = sourceSets.main.output.classesDirs.singleFile
+
 processResources {
     filesMatching('**/*.info') {
         filter { line ->
