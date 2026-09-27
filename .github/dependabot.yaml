@@ -24,4 +24,13 @@ updates:
       github-actions:
         patterns:
           - "*"
+  - package-ecosystem: "nix" # See documentation for possible values
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "quarterly"
+    groups:
+      nix:
+        patterns:
+          - "*"
+
 
