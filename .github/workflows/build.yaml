@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: 2024 Tomodachi94
+#
+# SPDX-License-Identifier: MIT
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Checks
+on: [push]
+permissions:
+  contents: read
+jobs:
+  just-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+      - name: Fetch CI dependencies
+        run: |
+          nix develop .#
+      - name: Execute `just check`
+        run: |
+          nix develop .# --command sh -c "gradle jar"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Mod
+          path: build/libs/*.jar
+
