@@ -20,7 +20,7 @@ jobs:
       - name: Fetch CI dependencies
         run: |
           nix develop .#
-      - name: Execute `just check`
+      - name: Execute `gradle jar`
         run: |
           nix develop .# --command sh -c "gradle jar"
       - uses: actions/upload-artifact@v7
