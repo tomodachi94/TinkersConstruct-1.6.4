@@ -9,7 +9,6 @@
 plugins {
     id 'java'
 	id 'org.gradlex.reproducible-builds' version '1.1'
-	id 'eu.bitfunk.gradle.plugin.tool.gitversion' version '0.2.0'
 	id 'pl.allegro.tech.build.axion-release' version '1.21.2'
     id 'net.minecraftforge.gradle' version '7.0.40'
     id 'net.minecraftforge.renamer' version '1.1.7'
@@ -39,8 +38,6 @@ repositories {
 
 group = 'tconstruct'
 
-ext.artifact_version_override = 'NotUsed'
-
 dependencies {
     implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
     compileOnly renamer.dependency("curse.maven:ForgeMultipart-229323:2233279")
@@ -60,7 +57,9 @@ renamer.classes('renameJarToSrg', tasks.named('jar', Jar)) {
     archiveClassifier = ""
 }
 
-def artifact_version = scmVersion.version
+// FIXME: this should work?
+// def artifact_version = scmVersion.version
+def artifact_version = "2026.09.28"
 version = "${minecraft_version}-${artifact_version}"
 
 minecraft {
