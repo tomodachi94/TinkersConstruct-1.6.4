@@ -48,6 +48,16 @@ dependencies {
 
 renamer.mappings.from minecraft.dependency.toObfFile
 
+renamer.classes(tasks.named('jar', Jar)) {
+    map.from minecraft.dependency.toSrgFile
+    archiveClassifier = 'srg'
+}
+
+renamer.classes('renameJarToSrg', tasks.named('jar', Jar)) {
+    mappings(minecraft.dependency.toSrg.get())
+    archiveClassifier = ""
+}
+
 // Finds and sets version data
 task buildInfo {
     def cmd = "git rev-parse --short HEAD"
@@ -115,6 +125,7 @@ processResources {
 
 // Add Coremod Manifest
 jar {
+    archiveClassifier = "dev"
     manifest {
         attributes 'FMLCorePlugin': 'tconstruct.preloader.TConstructLoaderContainer'
         attributes 'FMLCorePluginContainsFMLMod': 'true'

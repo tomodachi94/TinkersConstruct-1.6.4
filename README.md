@@ -7,7 +7,7 @@ Turn everything into golems!
 Install Forge as usual, and setup your IDE as with any other Forge project. Copy `TCore_dummy.jar` to `forge/mcp/jars/mods/` to enable the Preloader (optional -- only needed when working on the preloader itself)
 
 ## Compile from Source
-Run [gradle] in the repository root: `gradlew[.bat] build`. To get a JAR, run `gradlew jar`. To test your changes in the game, run `gradlew runClient`.
+Run [gradle] in the repository root: `gradlew[.bat] build`. To get a JAR, run `gradlew jar`. To test your changes in the game, run `gradlew runClient`. To reobfuscate the JAR for use in an obfuscated game, run `gradle renameJarToSrg`.
 
 ## Issue reporting
 Please include the following:

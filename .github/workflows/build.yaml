@@ -22,9 +22,19 @@ jobs:
           nix develop .#
       - name: Execute `gradle jar`
         run: |
-          nix develop .# --command sh -c "gradle jar"
+          nix develop .# --command sh -c "gradle jar renameJarToSrg"
       - uses: actions/upload-artifact@v7
         with:
-          name: Mod
+          if-no-files-found: "error"
+          name: "Developer JAR"
+          path: build/libs/*-dev.jar
+      - run: |
+          rm build/libs/*-dev.jar
+      - uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: "error"
+          name: "Regular JAR (this is probably what you want)"
           path: build/libs/*.jar
+
+
 
