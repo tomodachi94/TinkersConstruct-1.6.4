@@ -9,6 +9,8 @@
 plugins {
     id 'java'
 	id 'org.gradlex.reproducible-builds' version '1.1'
+	id 'eu.bitfunk.gradle.plugin.tool.gitversion' version '0.2.0'
+	id 'pl.allegro.tech.build.axion-release' version '1.21.2'
     id 'net.minecraftforge.gradle' version '7.0.40'
     id 'net.minecraftforge.renamer' version '1.1.7'
 }
@@ -58,33 +60,7 @@ renamer.classes('renameJarToSrg', tasks.named('jar', Jar)) {
     archiveClassifier = ""
 }
 
-// Finds and sets version data
-task buildInfo {
-    def cmd = "git rev-parse --short HEAD"
-    def proc = cmd.execute()
-    proc.waitFor()
-    if (proc.exitValue() == 0) {
-        ext.revision = proc.text.trim()
-    } else {
-        ext.revision = "GITBORK"
-    }
-
-    if (System.getenv().BUILD_NUMBER != null) {
-        ext.buildNum = System.getenv().BUILD_NUMBER
-    } else {
-        ext.buildNum = "DEV"
-    }
-}
-ext.artifact_version = 'NFG'
-if (System.getenv().ARTIFACT_VERSION == null && artifact_version_override == 'NotUsed') {
-    artifact_version = "${project.buildInfo.buildNum}.${project.buildInfo.revision}"
-}
-if (System.getenv().ARTIFACT_VERSION != null && artifact_version_override == 'NotUsed') {
-    artifact_version = "${system.getenv().ARTIFACT_VERSION}"
-}
-if (artifact_version_override != 'NotUsed') {
-    artifact_version = "${artifact_version_override}"
-}
+def artifact_version = scmVersion.version
 version = "${minecraft_version}-${artifact_version}"
 
 minecraft {
