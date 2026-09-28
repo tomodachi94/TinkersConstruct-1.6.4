@@ -7,9 +7,11 @@ import tconstruct.common.TContent;
 import tconstruct.library.tools.AbilityHelper;
 import tconstruct.util.player.TPlayerStats;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.FakePlayer;
 import cpw.mods.fml.common.ICraftingHandler;
 
 public class TCraftingHandler implements ICraftingHandler
@@ -21,7 +23,7 @@ public class TCraftingHandler implements ICraftingHandler
         int itemID = item.getItem().itemID;
         if (!player.worldObj.isRemote)
         {
-            if (itemID == TContent.toolStationWood.blockID)
+            if (itemID == TContent.toolStationWood.blockID && isRealPlayer(player))
             {
                 TPlayerStats stats = TConstruct.playerTracker.getPlayerStats(player.username);
                 NBTTagCompound tags = player.getEntityData().getCompoundTag("TConstruct");
@@ -34,17 +36,32 @@ public class TCraftingHandler implements ICraftingHandler
             }
             if (itemID == TContent.smeltery.blockID || itemID == TContent.lavaTank.blockID)
             {
-                TPlayerStats stats = TConstruct.playerTracker.getPlayerStats(player.username);
-                NBTTagCompound tags = player.getEntityData().getCompoundTag("TConstruct");
-                if (!tags.getBoolean("smelteryManual") || !stats.smelteryManual)
+                if (isRealPlayer(player))
                 {
-                    stats.smelteryManual = true;
-                    tags.setBoolean("smelteryManual", true);
-                    AbilityHelper.spawnItemAtPlayer(player, new ItemStack(TContent.manualBook, 1, 2));
+                    TPlayerStats stats = TConstruct.playerTracker.getPlayerStats(player.username);
+                    NBTTagCompound tags = player.getEntityData().getCompoundTag("TConstruct");
+                    if (!tags.getBoolean("smelteryManual") || !stats.smelteryManual)
+                    {
+                        stats.smelteryManual = true;
+                        tags.setBoolean("smelteryManual", true);
+                        AbilityHelper.spawnItemAtPlayer(player, new ItemStack(TContent.manualBook, 1, 2));
+                    }
                 }
                 player.addStat(TAchievements.achievements.get("tconstruct.smelteryMaker"), 1);
             }
         }
+    }
+
+    /**
+     * Determines whether a "player" is a real player or a fake player.
+     * Fake players are used for things like machines and sometimes need
+     * to be treated differently from real players.
+     * @see net.minecraftforge.common.FakePlayer
+     * @return <code>true</code> if the player is real; <code>false</code> otherwise.
+     */
+    private static boolean isRealPlayer (EntityPlayer player)
+    {
+        return player instanceof EntityPlayerMP && !(player instanceof FakePlayer);
     }
 
     @Override
