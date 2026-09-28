@@ -6,15 +6,14 @@ Turn everything into golems!
 
 Install Forge as usual, and setup your IDE as with any other Forge project. Copy `TCore_dummy.jar` to `forge/mcp/jars/mods/` to enable the Preloader (optional -- only needed when working on the preloader itself)
 
-##Compile from Source
-setup: Run [gradle]in the repository root: `gradlew[.bat] setupDevWorkspace [eclipse|idea]`
-build: Run [gradle]in the repository root: `gradlew[.bat] build'
+## Compile from Source
+Run [gradle] in the repository root: `gradlew[.bat] build`. To get a JAR, run `gradlew jar`. To test your changes in the game, run `gradlew runClient`.
 
-##Issue reporting
+## Issue reporting
 Please include the following:
 
 * Minecraft version
-* Tinkers' Construct version
+* Tinkers' Construct version and where you got it
 * Forge version/build
 * Versions of any mods potentially related to the issue 
 * Any relevant screenshots are greatly appreciated.
@@ -22,13 +21,11 @@ Please include the following:
 	* Steps to reproduce
 	* ForgeModLoader-client-0.log (the FML log) from the root folder of the client
 
-##Licenses
+## Licenses
 Most code is public domain under [Creative Commons 0](http://creativecommons.org/publicdomain/zero/1.0/).
 
 Textures and binaries are licensed under [Creative Commons 3](http://creativecommons.org/licenses/by/3.0/).
 
-Any modpack which uses Tinkers' Construct takes **full** responsibility for user support queries. For anyone else, we only support official builds from the main CI server, not custom built jars. We also do not take bug reports for outdated builds of Minecraft.
-
-If you have queries about any license or the above support restrictions, please drop by our IRC channel, #TinkersConstruct on irc.esper.net
-
 Any alternate licenses are noted where appropriate.
+
+Please do not file issues with the original mod's authors; you should do that here instead.
