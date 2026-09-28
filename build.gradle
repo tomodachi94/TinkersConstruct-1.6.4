@@ -66,7 +66,6 @@ version = "${minecraft_version}-${artifact_version}"
 minecraft {
     mappings channel: 'snapshot', version: '20130918-1.6.3'
     accessTransformer.from file('resources/META-INF/accesstransformer.cfg')
-    // replace '${version}', project.version
 
     runs {
         register('client') {
@@ -105,40 +104,5 @@ jar {
     manifest {
         attributes 'FMLCorePlugin': 'tconstruct.preloader.TConstructLoaderContainer'
         attributes 'FMLCorePluginContainsFMLMod': 'true'
-    }
-}
-
-// Create deobf dev jars
-task deobfJar(type: Jar) {
-    from sourceSets.main.output
-    archiveClassifier = 'deobf'
-}
-
-// Create API library jar
-task libJar(type: Jar) {
-    from(sourceSets.main.java) {
-        include "tconstruct/library/*"
-    }
-    archiveClassifier = 'lib'
-}
-
-artifacts {
-    archives deobfJar
-    archives libJar
-}
-
-task("uploadJars", dependsOn:"build") {
-    
-    description = "uploads JARs"
-
-    if (project.hasProperty("local_maven")) {
-	    apply plugin: 'maven'
-            uploadArchives {
-                repositories {
-                    mavenDeployer {
-                        repository(url: "file://${local_maven}")
-                }
-            }
-        }
     }
 }
