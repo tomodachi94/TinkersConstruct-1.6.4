@@ -388,8 +388,9 @@ public class TPlayerHandler implements IPlayerTracker
     public EntityPlayer getEntityPlayer (String username)
     {
         TPlayerStats stats = playerStats.get(username);
-        if (stats == null)
+        if (stats == null || stats.player == null)
         {
+            // getPlayerStats() creates entries without a player for names that aren't logged in
             return null;
         }
         else
