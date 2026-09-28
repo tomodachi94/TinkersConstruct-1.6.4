@@ -53,10 +53,11 @@ public class TCraftingHandler implements ICraftingHandler
     }
 
     /**
-     * Machines that craft (autocrafters, Applied Energistics' Molecular Assembler, ...) use a fake
-     * player. Don't give them the manuals: the book would be dropped where the fake player is,
-     * usually the world spawn, again after every restart. Checking for this also avoids creating a
-     * stats entry with no player for them.
+     * Determines whether a "player" is a real player or a fake player.
+     * Fake players are used for things like machines and sometimes need
+     * to be treated differently from real players.
+     * @see net.minecraftforge.common.FakePlayer
+     * @return <code>true</code> if the player is real; <code>false</code> otherwise.
      */
     private static boolean isRealPlayer (EntityPlayer player)
     {
