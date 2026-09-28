@@ -1,8 +1,7 @@
 package tconstruct.library.util;
 
-public interface IActiveLogic
-{
-    public boolean getActive ();
+public interface IActiveLogic {
+  boolean getActive();
 
-    public void setActive (boolean flag);
+  void setActive(boolean flag);
 }

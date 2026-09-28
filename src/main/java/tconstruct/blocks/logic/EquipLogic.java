@@ -1,7 +1,7 @@
 package tconstruct.blocks.logic;
 
-import tconstruct.library.blocks.InventoryLogic;
 import net.minecraft.item.ItemStack;
+import tconstruct.library.blocks.InventoryLogic;
 
 /* Slots
  * 0: Frying pan item
@@ -9,50 +9,39 @@ import net.minecraft.item.ItemStack;
  * 2-9: Food
  */
 
-public abstract class EquipLogic extends InventoryLogic
-{
+public abstract class EquipLogic extends InventoryLogic {
 
-    public EquipLogic(int invSize)
-    {
-        super(invSize);
-    }
+  public EquipLogic(int invSize) {
+    super(invSize);
+  }
 
-    public void setEquipmentItem (ItemStack stack)
-    {
-        inventory[0] = stack.copy();
-    }
+  public void setEquipmentItem(ItemStack stack) {
+    inventory[0] = stack.copy();
+  }
 
-    public boolean hasEquipmentItem ()
-    {
-        return inventory[0] != null;
-    }
+  public boolean hasEquipmentItem() {
+    return inventory[0] != null;
+  }
 
-    public ItemStack getEquipmentItem ()
-    {
-        return inventory[0];
-    }
+  public ItemStack getEquipmentItem() {
+    return inventory[0];
+  }
 
-    @Override
-    public void setInventorySlotContents (int slot, ItemStack stack)
-    {
-        if (slot == 0)
-        {
-            return;
-        }
-        else
-        {
-            super.setInventorySlotContents(slot, stack);
-        }
+  @Override
+  public void setInventorySlotContents(int slot, ItemStack stack) {
+    if (slot == 0) {
+      return;
+    } else {
+      super.setInventorySlotContents(slot, stack);
     }
+  }
 
-    @Override
-    public ItemStack getStackInSlot (int slot)
-    {
-        return slot != 0 ? inventory[slot] : null;
-    }
+  @Override
+  public ItemStack getStackInSlot(int slot) {
+    return slot != 0 ? inventory[slot] : null;
+  }
 
-    public boolean isStackInSlot (int slot)
-    {
-        return slot != 0 ? inventory[slot] != null : false;
-    }
+  public boolean isStackInSlot(int slot) {
+    return slot != 0 ? inventory[slot] != null : false;
+  }
 }

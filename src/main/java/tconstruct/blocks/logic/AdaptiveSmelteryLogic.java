@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -36,551 +35,464 @@ import tconstruct.library.util.IActiveLogic;
 import tconstruct.library.util.IMasterLogic;
 import tconstruct.library.util.IServantLogic;
 
-public class AdaptiveSmelteryLogic extends AdaptiveInventoryLogic implements IActiveLogic, IMasterLogic, IComponentHolder, IFluidHandler
-{
-    byte direction;
-    boolean updateFluids = false;
-    boolean recheckStructure = false;
-    boolean updateAir = false;
-    SmelteryScan structure = new SmelteryScan(this, TContent.smeltery, TContent.lavaTank);
-    MultiFluidTank multitank = new MultiFluidTank();
-    SmelteryComponent smeltery = new SmelteryComponent(this, structure, multitank, 800);
-    HashMap<CoordTuple, LiquidDataInstance> airUpdates = new HashMap<CoordTuple, LiquidDataInstance>();
-    int tick = 0;
+public class AdaptiveSmelteryLogic extends AdaptiveInventoryLogic
+    implements IActiveLogic, IMasterLogic, IComponentHolder, IFluidHandler {
+  byte direction;
+  boolean updateFluids = false;
+  boolean recheckStructure = false;
+  boolean updateAir = false;
+  SmelteryScan structure = new SmelteryScan(this, TContent.smeltery, TContent.lavaTank);
+  MultiFluidTank multitank = new MultiFluidTank();
+  SmelteryComponent smeltery = new SmelteryComponent(this, structure, multitank, 800);
+  HashMap<CoordTuple, LiquidDataInstance> airUpdates =
+      new HashMap<CoordTuple, LiquidDataInstance>();
+  int tick = 0;
 
-    public MultiFluidTank getMultiTank ()
-    {
-        return multitank;
-    }
+  public MultiFluidTank getMultiTank() {
+    return multitank;
+  }
 
-    public SmelteryComponent getSmeltery ()
-    {
-        return smeltery;
-    }
+  public SmelteryComponent getSmeltery() {
+    return smeltery;
+  }
 
-    public void updateEntity ()
-    {
-        tick++;
-        if (tick % 4 == 0)
-            smeltery.heatItems();
+  public void updateEntity() {
+    tick++;
+    if (tick % 4 == 0) smeltery.heatItems();
 
-        if (!worldObj.isRemote)
-        {
-            if (tick % 20 == 0)
-            {
-                if (structure.isComplete())
-                    smeltery.update();
+    if (!worldObj.isRemote) {
+      if (tick % 20 == 0) {
+        if (structure.isComplete()) smeltery.update();
 
-                if (updateFluids)
-                {
-                    distributeFluids();
-                    updateFluids = false;
-                }
-
-                if (updateAir)
-                {
-                    updateAir();
-                    updateAir = false;
-                }
-
-                if (recheckStructure)
-                {
-                    structure.recheckStructure();
-                    recheckStructure = false;
-                }
-            }
-
-            if (tick >= 60)
-            {
-                if (!structure.isComplete())
-                {
-                    structure.checkValidStructure();
-                    if (structure.isComplete())
-                    {
-                        validateSmeltery();
-                    }
-                }
-                tick = 0;
-            }
-
-            if (airUpdates.size() > 0)
-                updateFluidBlocks();
+        if (updateFluids) {
+          distributeFluids();
+          updateFluids = false;
         }
-    }
 
-    public void setUpdateFluids ()
-    {
-        updateFluids = true;
-    }
-
-    @Override
-    public List<LogicComponent> getComponents ()
-    {
-        ArrayList<LogicComponent> ret = new ArrayList<LogicComponent>(3);
-        ret.add(structure);
-        ret.add(multitank);
-        ret.add(smeltery);
-        return ret;
-    }
-
-    /* Structure */
-
-    @Override
-    public void setWorldObj (World world)
-    {
-        super.setWorldObj(world);
-        structure.setWorld(world);
-        smeltery.setWorld(world);
-    }
-
-    @Override
-    public void notifyChange (IServantLogic servant, int x, int y, int z)
-    {
-        if (!worldObj.isRemote)
-        {
-            //System.out.println("Notifying of change from "+new CoordTuple(x, y, z));
-            recheckStructure = true;
+        if (updateAir) {
+          updateAir();
+          updateAir = false;
         }
-    }
 
-    @Override
-    public void placeBlock (EntityLivingBase entity, ItemStack itemstack)
-    {
-        structure.checkValidStructure();
-        if (structure.isComplete())
-        {
+        if (recheckStructure) {
+          structure.recheckStructure();
+          recheckStructure = false;
+        }
+      }
+
+      if (tick >= 60) {
+        if (!structure.isComplete()) {
+          structure.checkValidStructure();
+          if (structure.isComplete()) {
             validateSmeltery();
+          }
         }
+        tick = 0;
+      }
+
+      if (airUpdates.size() > 0) updateFluidBlocks();
     }
+  }
 
-    void validateSmeltery ()
-    {
-        adjustInventory(structure.getAirSize(), true);
-        smeltery.adjustSize(structure.getAirSize(), true);
-        multitank.setCapacity(structure.getAirSize() * (TConstruct.ingotLiquidValue * 18));
-        smeltery.setActiveLavaTank(structure.lavaTanks.get(0));
-        worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+  public void setUpdateFluids() {
+    updateFluids = true;
+  }
+
+  @Override
+  public List<LogicComponent> getComponents() {
+    ArrayList<LogicComponent> ret = new ArrayList<LogicComponent>(3);
+    ret.add(structure);
+    ret.add(multitank);
+    ret.add(smeltery);
+    return ret;
+  }
+
+  /* Structure */
+
+  @Override
+  public void setWorldObj(World world) {
+    super.setWorldObj(world);
+    structure.setWorld(world);
+    smeltery.setWorld(world);
+  }
+
+  @Override
+  public void notifyChange(IServantLogic servant, int x, int y, int z) {
+    if (!worldObj.isRemote) {
+      // System.out.println("Notifying of change from "+new CoordTuple(x, y, z));
+      recheckStructure = true;
     }
+  }
 
-    @Override
-    public void removeBlock ()
-    {
-        structure.cleanup();
+  @Override
+  public void placeBlock(EntityLivingBase entity, ItemStack itemstack) {
+    structure.checkValidStructure();
+    if (structure.isComplete()) {
+      validateSmeltery();
     }
+  }
 
-    /* Direction */
+  void validateSmeltery() {
+    adjustInventory(structure.getAirSize(), true);
+    smeltery.adjustSize(structure.getAirSize(), true);
+    multitank.setCapacity(structure.getAirSize() * (TConstruct.ingotLiquidValue * 18));
+    smeltery.setActiveLavaTank(structure.lavaTanks.get(0));
+    worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+  }
 
-    @Override
-    public byte getRenderDirection ()
-    {
-        return direction;
+  @Override
+  public void removeBlock() {
+    structure.cleanup();
+  }
+
+  /* Direction */
+
+  @Override
+  public byte getRenderDirection() {
+    return direction;
+  }
+
+  @Override
+  public ForgeDirection getForgeDirection() {
+    return ForgeDirection.VALID_DIRECTIONS[direction];
+  }
+
+  @Override
+  public void setDirection(int side) {}
+
+  @Override
+  public void setDirection(float yaw, float pitch, EntityLivingBase player) {
+    int facing = MathHelper.floor_double((double) (yaw / 360) + 0.5D) & 3;
+    switch (facing) {
+      case 0:
+        direction = 2;
+        break;
+
+      case 1:
+        direction = 5;
+        break;
+
+      case 2:
+        direction = 3;
+        break;
+
+      case 3:
+        direction = 4;
+        break;
     }
+  }
 
-    @Override
-    public ForgeDirection getForgeDirection ()
-    {
-        return ForgeDirection.VALID_DIRECTIONS[direction];
+  @Override
+  public boolean getActive() {
+    return structure.isComplete();
+  }
+
+  @Override
+  public void setActive(boolean flag) {}
+
+  /* Inventory */
+
+  @Override
+  public int getInventoryStackLimit() {
+    return 1;
+  }
+
+  @Override
+  public void setInventorySlotContents(int slot, ItemStack itemstack) {
+    inventory[slot] = itemstack;
+    if (itemstack != null && itemstack.stackSize > getInventoryStackLimit()) {
+      itemstack.stackSize = getInventoryStackLimit();
     }
+    updateWorldBlock(slot, itemstack);
+    updateAir = true;
+  }
 
-    @Override
-    public void setDirection (int side)
-    {
+  @Override
+  public ItemStack decrStackSize(int slot, int quantity) {
+    if (inventory[slot] != null) {
+      if (inventory[slot].stackSize <= quantity) {
+        ItemStack stack = inventory[slot];
+        inventory[slot] = null;
+        updateWorldBlock(slot, inventory[slot]);
+        return stack;
+      }
+      ItemStack split = inventory[slot].splitStack(quantity);
+      if (inventory[slot].stackSize == 0) {
+        inventory[slot] = null;
+      }
 
+      updateWorldBlock(slot, inventory[slot]);
+      return split;
+    } else {
+      return null;
     }
+  }
 
-    @Override
-    public void setDirection (float yaw, float pitch, EntityLivingBase player)
-    {
-        int facing = MathHelper.floor_double((double) (yaw / 360) + 0.5D) & 3;
-        switch (facing)
-        {
-        case 0:
-            direction = 2;
-            break;
+  @Override
+  public void onInventoryChanged() {
+    smeltery.updateTemperatures();
+    updateAir = true;
+    super.onInventoryChanged();
+  }
 
-        case 1:
-            direction = 5;
-            break;
+  void updateWorldBlock(int slot, ItemStack itemstack) {
+    CoordTuple air = structure.getAirByIndex(slot);
+    if (air != null) {
+      TileEntity te = worldObj.getBlockTileEntity(air.x, air.y, air.z);
+      if (te != null && te instanceof TankAirLogic) {
+        ((TankAirLogic) te).setInventorySlotContents(0, itemstack);
+      }
+    }
+  }
 
-        case 2:
-            direction = 3;
-            break;
+  static final int pixelLayer = 162;
 
-        case 3:
-            direction = 4;
-            break;
+  // Do the Monster Mash~
+  public void distributeFluids() {
+    // Calculate liquids in each block
+    int size = structure.getAirLayerSize();
+    // HashMap<CoordTuple, LiquidDataInstance> blocks = new HashMap<CoordTuple,
+    // LiquidDataInstance>();
+
+    for (FluidStack fluid : multitank.fluidlist) {
+      // Base calculations per liquid
+      LiquidData data = new LiquidData(fluid.amount, size);
+      int baseY = structure.airCoords.get(0).y;
+      int layerSize = structure.getAirLayerSize();
+
+      // Calculate where to distribute liquids
+      for (int i = 0; i < structure.airCoords.size(); i++) {
+        LiquidDataInstance instance;
+        CoordTuple coord = structure.airCoords.get(i);
+        int height = 16 * (coord.y - baseY);
+        int position = i % layerSize;
+
+        if (!airUpdates.containsKey(coord)) {
+          instance = new LiquidDataInstance();
+          airUpdates.put(coord, instance);
+        } else {
+          instance = airUpdates.get(coord);
         }
-    }
 
-    @Override
-    public boolean getActive ()
-    {
-        return structure.isComplete();
-    }
-
-    @Override
-    public void setActive (boolean flag)
-    {
-
-    }
-
-    /* Inventory */
-
-    @Override
-    public int getInventoryStackLimit ()
-    {
-        return 1;
-    }
-
-    @Override
-    public void setInventorySlotContents (int slot, ItemStack itemstack)
-    {
-        inventory[slot] = itemstack;
-        if (itemstack != null && itemstack.stackSize > getInventoryStackLimit())
+        if (instance.openLayers()
+            > 0) // This is capable of sending negative liquid sizes to blocks without the stopgap
+        // check
         {
-            itemstack.stackSize = getInventoryStackLimit();
-        }
-        updateWorldBlock(slot, itemstack);
-        updateAir = true;
-    }
+          if (position > data.blocksWithExtra) {
+            // Calculate open layers
+            int open = data.layers - height + 1;
+            if (open < 1) // Temporary stopgap check
+            continue;
+            if (open > instance.openLayers()) open = instance.openLayers();
 
-    @Override
-    public ItemStack decrStackSize (int slot, int quantity)
-    {
-        if (inventory[slot] != null)
-        {
-            if (inventory[slot].stackSize <= quantity)
-            {
-                ItemStack stack = inventory[slot];
-                inventory[slot] = null;
-                updateWorldBlock(slot, inventory[slot]);
-                return stack;
+            // Copy fluid
+            FluidStack newFluid = fluid.copy();
+            newFluid.amount = pixelLayer * open;
+            instance.addFluid(open, newFluid);
+
+            // Subtract from total
+            data.totalAmount -= newFluid.amount;
+            if (data.totalAmount <= 0) break;
+          } else if (position == data.blocksWithExtra && data.leftovers > 0) {
+            // Calculate open layers
+            int open = data.layers - height + 1;
+            if (open < 1) // Temporary stopgap check
+            continue;
+            boolean full = false;
+            if (open > instance.openLayers()) {
+              open = instance.openLayers();
+              full = true;
             }
-            ItemStack split = inventory[slot].splitStack(quantity);
-            if (inventory[slot].stackSize == 0)
-            {
-                inventory[slot] = null;
-            }
 
-            updateWorldBlock(slot, inventory[slot]);
-            return split;
+            // Copy fluid
+            FluidStack newFluid = fluid.copy();
+            newFluid.amount = pixelLayer * open;
+            if (!full) newFluid.amount += data.leftovers;
+            instance.addFluid(open, newFluid);
+
+            // Subtract from total
+            data.totalAmount -= newFluid.amount;
+            if (data.totalAmount <= 0) break;
+          } else {
+            // Calculate open layers
+            int open = data.layers - height;
+            if (open < 1) // Temporary stopgap check
+            continue;
+            if (open > instance.openLayers()) open = instance.openLayers();
+
+            // Copy fluid
+            FluidStack newFluid = fluid.copy();
+            newFluid.amount = pixelLayer * open;
+            instance.addFluid(open, newFluid);
+
+            // Subtract from total
+            data.totalAmount -= newFluid.amount;
+            if (data.totalAmount <= 0) break;
+          }
         }
-        else
-        {
-            return null;
-        }
+      }
     }
 
-    @Override
-    public void onInventoryChanged ()
-    {
-        smeltery.updateTemperatures();
-        updateAir = true;
-        super.onInventoryChanged();
+    // Distribute liquids to each block
+  }
+
+  protected void updateFluidBlocks() {
+    Iterator iter = airUpdates.entrySet().iterator();
+    byte count = 0;
+    while (iter.hasNext() && count < 40) {
+      Map.Entry pairs = (Map.Entry) iter.next();
+      CoordTuple coord = (CoordTuple) pairs.getKey();
+      TileEntity te = worldObj.getBlockTileEntity(coord.x, coord.y, coord.z);
+      if (te instanceof TankAirLogic) {
+        ((TankAirLogic) te).overrideFluids(((LiquidDataInstance) pairs.getValue()).fluids);
+      }
+      iter.remove();
+      count++;
+    }
+  }
+
+  public void updateAir() {
+    for (CoordTuple loc : structure.airCoords) worldObj.markBlockForUpdate(loc.x, loc.y, loc.z);
+  }
+
+  class LiquidData {
+    public int totalAmount;
+    public int layers;
+    public int leftovers;
+    public int blocksWithExtra;
+
+    LiquidData(int amount, int blocks) {
+      totalAmount = amount;
+      int layerAmount = pixelLayer * blocks;
+      layers = amount / layerAmount;
+      leftovers = amount % pixelLayer;
+      blocksWithExtra = (amount % layerAmount) / pixelLayer;
+    }
+  }
+
+  class LiquidDataInstance {
+    public ArrayList<FluidStack> fluids = new ArrayList<FluidStack>();
+    int layers = 0;
+
+    public int openLayers() {
+      return 16 - layers;
     }
 
-    void updateWorldBlock (int slot, ItemStack itemstack)
-    {
-        CoordTuple air = structure.getAirByIndex(slot);
-        if (air != null)
-        {
-            TileEntity te = worldObj.getBlockTileEntity(air.x, air.y, air.z);
-            if (te != null && te instanceof TankAirLogic)
-            {
-                ((TankAirLogic) te).setInventorySlotContents(0, itemstack);
-            }
-        }
+    public void addFluid(int l, FluidStack fluid) {
+      layers += l;
+      fluids.add(fluid);
     }
+  }
 
-    static final int pixelLayer = 162;
+  /* Gui */
 
-    //Do the Monster Mash~
-    public void distributeFluids ()
-    {
-        //Calculate liquids in each block
-        int size = structure.getAirLayerSize();
-        //HashMap<CoordTuple, LiquidDataInstance> blocks = new HashMap<CoordTuple, LiquidDataInstance>();
+  @Override
+  public Container getGuiContainer(
+      InventoryPlayer inventoryplayer, World world, int x, int y, int z) {
+    return new AdaptiveSmelteryContainer(inventoryplayer, this);
+  }
 
-        for (FluidStack fluid : multitank.fluidlist)
-        {
-            //Base calculations per liquid
-            LiquidData data = new LiquidData(fluid.amount, size);
-            int baseY = structure.airCoords.get(0).y;
-            int layerSize = structure.getAirLayerSize();
+  public int getTempForSlot(int slot) {
+    return smeltery.activeTemps[slot];
+  }
 
-            //Calculate where to distribute liquids
-            for (int i = 0; i < structure.airCoords.size(); i++)
-            {
-                LiquidDataInstance instance;
-                CoordTuple coord = structure.airCoords.get(i);
-                int height = 16 * (coord.y - baseY);
-                int position = i % layerSize;
+  public int getMeltingPointForSlot(int slot) {
+    return smeltery.meltingTemps[slot];
+  }
 
-                if (!airUpdates.containsKey(coord))
-                {
-                    instance = new LiquidDataInstance();
-                    airUpdates.put(coord, instance);
-                }
-                else
-                {
-                    instance = airUpdates.get(coord);
-                }
+  @Override
+  public String getDefaultName() {
+    return "crafters.Smeltery";
+  }
 
-                if (instance.openLayers() > 0) //This is capable of sending negative liquid sizes to blocks without the stopgap check
-                {
-                    if (position > data.blocksWithExtra)
-                    {
-                        //Calculate open layers
-                        int open = data.layers - height + 1;
-                        if (open < 1) //Temporary stopgap check
-                            continue;
-                        if (open > instance.openLayers())
-                            open = instance.openLayers();
+  /* Fluids */
 
-                        //Copy fluid
-                        FluidStack newFluid = fluid.copy();
-                        newFluid.amount = pixelLayer * open;
-                        instance.addFluid(open, newFluid);
+  @Override
+  public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
+    return multitank.fill(resource, doFill);
+  }
 
-                        //Subtract from total
-                        data.totalAmount -= newFluid.amount;
-                        if (data.totalAmount <= 0)
-                            break;
-                    }
-                    else if (position == data.blocksWithExtra && data.leftovers > 0)
-                    {
-                        //Calculate open layers
-                        int open = data.layers - height + 1;
-                        if (open < 1) //Temporary stopgap check
-                            continue;
-                        boolean full = false;
-                        if (open > instance.openLayers())
-                        {
-                            open = instance.openLayers();
-                            full = true;
-                        }
+  @Override
+  public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
+    return multitank.drain(resource.amount, doDrain);
+  }
 
-                        //Copy fluid
-                        FluidStack newFluid = fluid.copy();
-                        newFluid.amount = pixelLayer * open;
-                        if (!full)
-                            newFluid.amount += data.leftovers;
-                        instance.addFluid(open, newFluid);
+  @Override
+  public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
+    return multitank.drain(maxDrain, doDrain);
+  }
 
-                        //Subtract from total
-                        data.totalAmount -= newFluid.amount;
-                        if (data.totalAmount <= 0)
-                            break;
-                    }
-                    else
-                    {
-                        //Calculate open layers
-                        int open = data.layers - height;
-                        if (open < 1) //Temporary stopgap check
-                            continue;
-                        if (open > instance.openLayers())
-                            open = instance.openLayers();
+  @Override
+  public boolean canFill(ForgeDirection from, Fluid fluid) {
+    return false;
+  }
 
-                        //Copy fluid
-                        FluidStack newFluid = fluid.copy();
-                        newFluid.amount = pixelLayer * open;
-                        instance.addFluid(open, newFluid);
+  @Override
+  public boolean canDrain(ForgeDirection from, Fluid fluid) {
+    return false;
+  }
 
-                        //Subtract from total
-                        data.totalAmount -= newFluid.amount;
-                        if (data.totalAmount <= 0)
-                            break;
-                    }
-                }
-            }
-        }
+  @Override
+  public FluidTankInfo[] getTankInfo(ForgeDirection from) {
+    return multitank.getMultiTankInfo();
+  }
 
-        //Distribute liquids to each block
-    }
+  public int getFillState() {
+    return 1;
+  }
 
-    protected void updateFluidBlocks ()
-    {
-        Iterator iter = airUpdates.entrySet().iterator();
-        byte count = 0;
-        while (iter.hasNext() && count < 40)
-        {
-            Map.Entry pairs = (Map.Entry) iter.next();
-            CoordTuple coord = (CoordTuple) pairs.getKey();
-            TileEntity te = worldObj.getBlockTileEntity(coord.x, coord.y, coord.z);
-            if (te instanceof TankAirLogic)
-            {
-                ((TankAirLogic) te).overrideFluids(((LiquidDataInstance) pairs.getValue()).fluids);
-            }
-            iter.remove();
-            count++;
-        }
-    }
+  /* NBT */
 
-    public void updateAir ()
-    {
-        for (CoordTuple loc : structure.airCoords)
-            worldObj.markBlockForUpdate(loc.x, loc.y, loc.z);
-    }
+  @Override
+  public void readFromNBT(NBTTagCompound tags) {
+    super.readFromNBT(tags);
+    readNetworkNBT(tags);
 
-    class LiquidData
-    {
-        public int totalAmount;
-        public int layers;
-        public int leftovers;
-        public int blocksWithExtra;
+    structure.readFromNBT(tags);
+    multitank.readFromNBT(tags);
+    smeltery.readFromNBT(tags);
+  }
 
-        LiquidData(int amount, int blocks)
-        {
-            totalAmount = amount;
-            int layerAmount = pixelLayer * blocks;
-            layers = amount / layerAmount;
-            leftovers = amount % pixelLayer;
-            blocksWithExtra = (amount % layerAmount) / pixelLayer;
-        }
-    }
+  public void readNetworkNBT(NBTTagCompound tags) {
+    direction = tags.getByte("Direction");
+    adjustInventory(tags.getInteger("InvSize"), false);
+    super.readInventoryFromNBT(tags);
 
-    class LiquidDataInstance
-    {
-        public ArrayList<FluidStack> fluids = new ArrayList<FluidStack>();
-        int layers = 0;
+    structure.readNetworkNBT(tags);
+    multitank.readNetworkNBT(tags);
+    smeltery.readNetworkNBT(tags);
+  }
 
-        public int openLayers ()
-        {
-            return 16 - layers;
-        }
+  @Override
+  public void writeToNBT(NBTTagCompound tags) {
+    super.writeToNBT(tags);
+    writeNetworkNBT(tags);
 
-        public void addFluid (int l, FluidStack fluid)
-        {
-            layers += l;
-            fluids.add(fluid);
-        }
-    }
+    structure.writeToNBT(tags);
+    multitank.writeToNBT(tags);
+    smeltery.writeToNBT(tags);
+  }
 
-    /* Gui */
+  public void writeNetworkNBT(NBTTagCompound tags) {
+    tags.setByte("Direction", direction);
+    tags.setInteger("InvSize", inventory.length);
+    super.writeInventoryToNBT(tags);
 
-    @Override
-    public Container getGuiContainer (InventoryPlayer inventoryplayer, World world, int x, int y, int z)
-    {
-        return new AdaptiveSmelteryContainer(inventoryplayer, this);
-    }
+    structure.writeNetworkNBT(tags);
+    multitank.writeNetworkNBT(tags);
+    smeltery.writeNetworkNBT(tags);
+  }
 
-    public int getTempForSlot (int slot)
-    {
-        return smeltery.activeTemps[slot];
-    }
+  @Override
+  public void onDataPacket(INetworkManager net, Packet132TileEntityData packet) {
+    readNetworkNBT(packet.data);
+    worldObj.markBlockForRenderUpdate(xCoord, yCoord, zCoord);
+  }
 
-    public int getMeltingPointForSlot (int slot)
-    {
-        return smeltery.meltingTemps[slot];
-    }
-
-    @Override
-    public String getDefaultName ()
-    {
-        return "crafters.Smeltery";
-    }
-
-    /* Fluids */
-
-    @Override
-    public int fill (ForgeDirection from, FluidStack resource, boolean doFill)
-    {
-        return multitank.fill(resource, doFill);
-    }
-
-    @Override
-    public FluidStack drain (ForgeDirection from, FluidStack resource, boolean doDrain)
-    {
-        return multitank.drain(resource.amount, doDrain);
-    }
-
-    @Override
-    public FluidStack drain (ForgeDirection from, int maxDrain, boolean doDrain)
-    {
-        return multitank.drain(maxDrain, doDrain);
-    }
-
-    @Override
-    public boolean canFill (ForgeDirection from, Fluid fluid)
-    {
-        return false;
-    }
-
-    @Override
-    public boolean canDrain (ForgeDirection from, Fluid fluid)
-    {
-        return false;
-    }
-
-    @Override
-    public FluidTankInfo[] getTankInfo (ForgeDirection from)
-    {
-        return multitank.getMultiTankInfo();
-    }
-
-    public int getFillState ()
-    {
-        return 1;
-    }
-
-    /* NBT */
-
-    @Override
-    public void readFromNBT (NBTTagCompound tags)
-    {
-        super.readFromNBT(tags);
-        readNetworkNBT(tags);
-
-        structure.readFromNBT(tags);
-        multitank.readFromNBT(tags);
-        smeltery.readFromNBT(tags);
-    }
-
-    public void readNetworkNBT (NBTTagCompound tags)
-    {
-        direction = tags.getByte("Direction");
-        adjustInventory(tags.getInteger("InvSize"), false);
-        super.readInventoryFromNBT(tags);
-
-        structure.readNetworkNBT(tags);
-        multitank.readNetworkNBT(tags);
-        smeltery.readNetworkNBT(tags);
-    }
-
-    @Override
-    public void writeToNBT (NBTTagCompound tags)
-    {
-        super.writeToNBT(tags);
-        writeNetworkNBT(tags);
-
-        structure.writeToNBT(tags);
-        multitank.writeToNBT(tags);
-        smeltery.writeToNBT(tags);
-    }
-
-    public void writeNetworkNBT (NBTTagCompound tags)
-    {
-        tags.setByte("Direction", direction);
-        tags.setInteger("InvSize", inventory.length);
-        super.writeInventoryToNBT(tags);
-
-        structure.writeNetworkNBT(tags);
-        multitank.writeNetworkNBT(tags);
-        smeltery.writeNetworkNBT(tags);
-    }
-
-    @Override
-    public void onDataPacket (INetworkManager net, Packet132TileEntityData packet)
-    {
-        readNetworkNBT(packet.data);
-        worldObj.markBlockForRenderUpdate(xCoord, yCoord, zCoord);
-    }
-
-    @Override
-    public Packet getDescriptionPacket ()
-    {
-        NBTTagCompound tag = new NBTTagCompound();
-        writeNetworkNBT(tag);
-        return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tag);
-    }
+  @Override
+  public Packet getDescriptionPacket() {
+    NBTTagCompound tag = new NBTTagCompound();
+    writeNetworkNBT(tag);
+    return new Packet132TileEntityData(xCoord, yCoord, zCoord, 1, tag);
+  }
 }

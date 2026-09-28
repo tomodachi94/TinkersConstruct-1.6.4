@@ -1,25 +1,21 @@
 package tconstruct.client.tabs;
 
-import tconstruct.client.TControls;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import tconstruct.client.TControls;
 
-public class InventoryTabArmorExtended extends AbstractTab
-{
-    public InventoryTabArmorExtended()
-    {
-        super(0, 0, 0, new ItemStack(Item.plateDiamond));
-    }
+public class InventoryTabArmorExtended extends AbstractTab {
+  public InventoryTabArmorExtended() {
+    super(0, 0, 0, new ItemStack(Item.plateDiamond));
+  }
 
-    @Override
-    public void onTabClicked ()
-    {
-        TControls.openArmorGui();
-    }
+  @Override
+  public void onTabClicked() {
+    TControls.openArmorGui();
+  }
 
-    @Override
-    public boolean shouldAddToList ()
-    {
-        return true;
-    }
+  @Override
+  public boolean shouldAddToList() {
+    return true;
+  }
 }

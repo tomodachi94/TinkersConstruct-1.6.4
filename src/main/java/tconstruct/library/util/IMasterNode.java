@@ -1,8 +1,7 @@
 package tconstruct.library.util;
 
-public interface IMasterNode extends IMasterLogic, IServantLogic
-{
-    public boolean isCurrentlyMaster ();
+public interface IMasterNode extends IMasterLogic, IServantLogic {
+  boolean isCurrentlyMaster();
 
-    public boolean isEquivalentMaster (IMasterLogic master);
+  boolean isEquivalentMaster(IMasterLogic master);
 }

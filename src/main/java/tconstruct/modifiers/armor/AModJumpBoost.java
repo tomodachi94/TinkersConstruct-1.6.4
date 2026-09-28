@@ -1,6 +1,3 @@
 package tconstruct.modifiers.armor;
 
-public class AModJumpBoost
-{
-
-}
+public class AModJumpBoost {}

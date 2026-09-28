@@ -3,18 +3,17 @@ package tconstruct.library.util;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraftforge.common.ForgeDirection;
 
-public interface IFacingLogic
-{
-    public byte getRenderDirection ();
+public interface IFacingLogic {
+  byte getRenderDirection();
 
-    public ForgeDirection getForgeDirection ();
+  ForgeDirection getForgeDirection();
 
-    @Deprecated
-    public void setDirection (int side);
+  @Deprecated
+  void setDirection(int side);
 
-    @Deprecated
-    public void setDirection (float yaw, float pitch, EntityLivingBase player);
+  @Deprecated
+  void setDirection(float yaw, float pitch, EntityLivingBase player);
 
-    /** This will be added next version
-    * public void setDirection(int side, float yaw, float pitch, EntityLivingBase player); */
+  /** This will be added next version
+   * public void setDirection(int side, float yaw, float pitch, EntityLivingBase player); */
 }

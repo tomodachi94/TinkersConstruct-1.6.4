@@ -1,5 +1,6 @@
 package tconstruct.plugins.waila;
 
+import java.util.List;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
 import mcp.mobius.waila.api.IWailaDataProvider;
@@ -8,57 +9,55 @@ import net.minecraft.util.StatCollector;
 import net.minecraftforge.fluids.FluidStack;
 import tconstruct.blocks.logic.SmelteryLogic;
 
-import java.util.List;
+public class SmelteryDataProvider implements IWailaDataProvider {
 
-public class SmelteryDataProvider implements IWailaDataProvider
-{
+  @Override
+  public ItemStack getWailaStack(IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    return null;
+  }
 
-    @Override
-    public ItemStack getWailaStack (IWailaDataAccessor accessor, IWailaConfigHandler config)
-    {
-        return null;
-    }
+  @Override
+  public List<String> getWailaHead(
+      ItemStack itemStack,
+      List<String> currenttip,
+      IWailaDataAccessor accessor,
+      IWailaConfigHandler config) {
+    return currenttip;
+  }
 
-    @Override
-    public List<String> getWailaHead (ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor, IWailaConfigHandler config)
-    {
-        return currenttip;
-    }
-
-    @Override
-    public List<String> getWailaBody (ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor, IWailaConfigHandler config)
-    {
-        if (accessor.getTileEntity() instanceof SmelteryLogic)
-        {
-            SmelteryLogic te = (SmelteryLogic) accessor.getTileEntity();
-            if (te.validStructure)
-            {
-                List<FluidStack> fls = te.moltenMetal;
-                if (fls.size() <= 0)
-                {
-                    currenttip.add("§o" + StatCollector.translateToLocal("tconstruct.waila.empty")); // "§o" == Italics
-                }
-                else
-                {
-                    for (int i = 0; i < fls.size(); i++)
-                    {
-                        FluidStack st = fls.get(i);
-                        currenttip.add(WailaRegistrar.fluidNameHelper(st) + " (" + st.amount + "mB)");
-                    }
-                }
-            }
-            else
-            {
-                currenttip.add("§o" + StatCollector.translateToLocal("tconstruct.waila.invalidstructure"));
-            }
+  @Override
+  public List<String> getWailaBody(
+      ItemStack itemStack,
+      List<String> currenttip,
+      IWailaDataAccessor accessor,
+      IWailaConfigHandler config) {
+    if (accessor.getTileEntity() instanceof SmelteryLogic) {
+      SmelteryLogic te = (SmelteryLogic) accessor.getTileEntity();
+      if (te.validStructure) {
+        List<FluidStack> fls = te.moltenMetal;
+        if (fls.size() <= 0) {
+          currenttip.add(
+              "§o" + StatCollector.translateToLocal("tconstruct.waila.empty")); // "§o" == Italics
+        } else {
+          for (int i = 0; i < fls.size(); i++) {
+            FluidStack st = fls.get(i);
+            currenttip.add(WailaRegistrar.fluidNameHelper(st) + " (" + st.amount + "mB)");
+          }
         }
-
-        return currenttip;
+      } else {
+        currenttip.add("§o" + StatCollector.translateToLocal("tconstruct.waila.invalidstructure"));
+      }
     }
 
-    @Override
-    public List<String> getWailaTail (ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor, IWailaConfigHandler config)
-    {
-        return currenttip;
-    }
+    return currenttip;
+  }
+
+  @Override
+  public List<String> getWailaTail(
+      ItemStack itemStack,
+      List<String> currenttip,
+      IWailaDataAccessor accessor,
+      IWailaConfigHandler config) {
+    return currenttip;
+  }
 }

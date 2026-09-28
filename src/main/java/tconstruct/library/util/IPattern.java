@@ -1,11 +1,10 @@
 package tconstruct.library.util;
 
-import tconstruct.library.crafting.PatternBuilder.MaterialSet;
 import net.minecraft.item.ItemStack;
+import tconstruct.library.crafting.PatternBuilder.MaterialSet;
 
-public interface IPattern
-{
-    public int getPatternCost (ItemStack pattern);
+public interface IPattern {
+  int getPatternCost(ItemStack pattern);
 
-    public ItemStack getPatternOutput (ItemStack pattern, ItemStack input, MaterialSet set);
+  ItemStack getPatternOutput(ItemStack pattern, ItemStack input, MaterialSet set);
 }
