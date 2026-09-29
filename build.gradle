@@ -58,6 +58,11 @@ renamer.classes('renameJarToSrg', tasks.named('jar', Jar)) {
     archiveClassifier = ""
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:unchecked'
+    options.deprecation = true
+}
+
 // FIXME: this should work?
 // def artifact_version = scmVersion.version
 def artifact_version = "2026.09.28"
