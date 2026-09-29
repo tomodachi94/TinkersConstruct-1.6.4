@@ -65,7 +65,7 @@ tasks.withType(JavaCompile) {
 
 // FIXME: this should work?
 // def artifact_version = scmVersion.version
-def artifact_version = "2026.09.28"
+def artifact_version = "2026.09.29"
 version = "${minecraft_version}-${artifact_version}"
 
 minecraft {

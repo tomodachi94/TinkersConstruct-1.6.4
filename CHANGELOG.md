@@ -2,6 +2,8 @@
 
 ### [unreleased]
 
+### v2026.09.29
+
 * Tinkers' Construct manuals no longer spawn when certain items are crafted by fake players 
   (for example, Applied Energistics' Molecular Assembler). Thanks to [@landonracer109](https://github.com/landonracer109).
 
